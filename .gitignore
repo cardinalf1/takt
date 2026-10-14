@@ -1,0 +1,41 @@
+# Build artifacts
+build/
+dist/
+*.spec.bak
+*.exe
+*.zip
+
+# Python cache & virtual environments
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# User logs and recorded speech
+logs/
+*.log
+*.wav
+
+# IDE files
+.vscode/
+.idea/
+
+# Node modules and bundled node binary (restored by scripts/bootstrap.py)
+src/engine/voz_node/node_modules/
+src/engine/voz_node/bin/
+
+# Model cache and large weights (clear-studio.onnx is downloaded by bootstrap)
+models/.cache/
+models/stt/
+models/voz/
+models/*.onnx
+
+# Secrets & credentials
+.env*
+*secret*
+*credential*
+
+# Backups
+*.bak

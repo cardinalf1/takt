@@ -1,0 +1,17 @@
+{
+  "name": "voz_node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@desert-ant-labs/voz": "^3.6.0",
+    "onnxruntime-node": "^1.30.0"
+  }
+}

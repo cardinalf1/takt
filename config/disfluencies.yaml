@@ -1,0 +1,53 @@
+# ==============================================================================
+# Takt Speech Disfluency & Filler Taxonomy
+# Derived from Switchboard Corpus (LDC97S62), words/fillers, & conversational NLP
+# ==============================================================================
+
+# 1. Filled Pauses: Acoustic vocalized hesitations (always stripped)
+filled_pauses:
+  - "um"
+  - "umm"
+  - "ummm"
+  - "uh"
+  - "uhh"
+  - "uhhh"
+  - "er"
+  - "erm"
+  - "ah"
+  - "ahh"
+  - "hm"
+  - "hmm"
+  - "mhm"
+  - "mm"
+
+# 2. Conversational Crutches & Hedges (preserved by acoustic engine; contextual cleanup is handled by LLM)
+hedges: []
+
+# 3. Discourse Markers: Interpersonal verbal fillers
+discourse_markers:
+  - "you know"
+  - "i mean"
+  - "you see"
+  - "to be honest"
+  - "honestly speaking"
+  - "at the end of the day"
+  - "so to speak"
+  - "as a matter of fact"
+
+# 4. Editorial Rollbacks: Speech commands that erase or restart previous clauses
+editorial_rollbacks:
+  - "scratch that"
+  - "scratch this"
+  - "never mind"
+  - "delete that"
+  - "erase that"
+  - "no wait"
+  - "or rather"
+  - "actually no"
+  - "let me rephrase"
+
+# 5. Word Rollback: Erases the single preceding token
+word_rollbacks:
+  - "scratch last word"
+  - "delete last word"
+  - "erase last word"

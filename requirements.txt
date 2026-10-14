@@ -1,0 +1,13 @@
+sounddevice>=0.4.7
+soundfile>=0.12.1
+numpy>=1.26.0
+scipy>=1.12.0
+onnxruntime>=1.17.0
+pywin32>=306
+pyyaml>=6.0.1
+psutil>=5.9.0
+PyQt6>=6.6.0
+huggingface_hub>=0.20.0
+Pillow>=10.0.0
+# optional: local Whisper fallback when the Voz worker is unavailable
+# faster-whisper>=1.0.0

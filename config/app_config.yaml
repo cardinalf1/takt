@@ -1,0 +1,61 @@
+hotkey:
+  key: alt_r
+  mode: push_to_talk
+audio:
+  device: null
+  sample_rate: 48000
+  channels: 1
+  buffer_duration_sec: 120.0
+  trailing_flush_ms: 350
+models:
+  backend: voz
+  voz:
+    language: en
+    compute_type: float16
+  clear:
+    model_path: models/clear-studio.onnx
+  uhm:
+    silence_threshold: 0.003
+    min_silence_duration_ms: 150
+  whisper:
+    model_path: base.en
+    compute_type: float16
+  formatter:
+    mode: smart_groq
+    style: clean
+    groq_api_key: ''
+    groq_model: qwen/qwen3.8-27b
+    router: always_smart
+    typesafe_api_key: ''
+    typesafe_endpoint: https://api.typesafe.ai/v1/systemone
+    anthropic_api_key: ''
+    anthropic_model: claude-3-5-sonnet-latest
+    openai_api_key: ''
+    openai_model: gpt-4o-mini
+    ollama_endpoint: http://127.0.0.1:11434
+    ollama_model: qwen2.5:1.5b
+privacy_shield:
+  enabled: false
+  mask_char: '*'
+  rules:
+  - credit_card
+  - phone_number
+  - email
+  - api_key
+  - ssn
+logging:
+  enabled: true
+  log_dir: logs
+  save_audio_recordings: true
+  max_audio_recordings: 10
+injection:
+  method: direct_unicode
+  restore_delay_ms: 1500
+performance:
+  idle_eviction_ttl_sec: 180
+  enable_cuda: true
+ui:
+  hud_enabled: true
+  tray_enabled: true
+  accent_color: '#ffbdd4'
+  bottom_offset: 24
