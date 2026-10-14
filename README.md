@@ -142,4 +142,4 @@ takt/
 
 ---
 
-Built by Raghav & Desert Ant Labs.
+Built by Raghav. Powered by Desert Ant Labs.
