@@ -36,7 +36,7 @@ from PyQt6.QtWidgets import (
     QLineEdit, QMessageBox, QPushButton, QScrollArea, QSizePolicy, QStackedWidget, QVBoxLayout, QWidget
 )
 
-from src.audio.capture import DEAD_PEAK_THRESHOLD, InputDevice, list_input_devices
+from src.audio.capture import DEAD_PEAK_THRESHOLD, InputDevice, _same_device, list_input_devices, rescan_devices
 from src.core.config import DEFAULT_CONFIG, app_dir, deep_merge, load_config, save_config
 from src.engine.formatter import list_ollama_models
 
@@ -939,6 +939,7 @@ class SettingsWindow(QWidget):
         self._loading = True
         self._stop_mic_test()
         self.device_combo.clear()
+        rescan_devices()  # pick up microphones plugged in since launch
         self._devices = list_input_devices()
         default = next((d for d in self._devices if d.is_default), None)
         label = f"System default  ({default.name})" if default else "System default"
@@ -954,7 +955,7 @@ class SettingsWindow(QWidget):
                 spec = None
         if spec:
             idx = next((i for i in range(1, self.device_combo.count())
-                        if str(self.device_combo.itemData(i)).lower().startswith(str(spec).lower()[:28])), -1)
+                        if _same_device(str(self.device_combo.itemData(i)), str(spec))), -1)
             if idx < 0:
                 self.device_combo.addItem(f"{spec}  (not connected)", spec)
                 idx = self.device_combo.count() - 1
@@ -972,7 +973,7 @@ class SettingsWindow(QWidget):
         name = self.device_combo.currentData()
         if name is None:
             return next((d for d in self._devices if d.is_default), self._devices[0] if self._devices else None)
-        return next((d for d in self._devices if str(name).lower().startswith(d.name.lower()[:28])), None)
+        return next((d for d in self._devices if _same_device(d.name, str(name))), None)
 
     def _toggle_mic_test(self):
         if self._test_stream is not None:

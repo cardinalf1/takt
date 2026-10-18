@@ -271,6 +271,34 @@ def test_device_listing_filters_virtual_and_duplicates():
     assert all(d.hostapi in ("Windows WASAPI", "MME", "Windows DirectSound") for d in devices)
 
 
+
+def test_device_name_matching_only_merges_mme_truncations():
+    from src.audio.capture import _same_device
+
+    assert _same_device("Headset (realme Buds Air7)", "headset (realme buds air7)")
+    # Distinct short names that merely share a prefix are different microphones
+    assert not _same_device("Microphone", "Microphone (USB Audio)")
+    assert not _same_device("Microphone (Realtek(R) Audio)", "Microphone (Realtek(R) Audio) 2")
+    # MME's 31-char truncation still collapses onto the full WASAPI name
+    full = "Microphone Array (Lenovo FHD Webcam Audio)"
+    assert _same_device(full[:31], full)
+
+
+def test_rescan_devices_reopens_live_streams():
+    from src.audio import capture as cap
+
+    mgr = cap.AudioCaptureManager()
+    try:
+        assert cap.rescan_devices()
+        if cap.list_input_devices():
+            assert mgr._stream is not None and mgr._stream.active
+        mgr._recording = True
+        assert not cap.rescan_devices(), "never reset PortAudio mid-dictation"
+        mgr._recording = False
+    finally:
+        mgr.shutdown()
+
+
 # ---------------------------------------------------------------------- pipeline policy
 def test_pipeline_dead_signal_policy():
     """First silent capture warns only; a second consecutive one rotates the microphone."""

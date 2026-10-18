@@ -14,6 +14,7 @@ Low-Latency Persistent Audio Capture Engine
 
 import threading
 import time
+import weakref
 from dataclasses import dataclass
 from math import gcd
 from typing import Callable, List, Optional, Sequence, Tuple, Union
@@ -31,10 +32,16 @@ _EXCLUDED_NAME_TOKENS = (
     "sound mapper", "primary sound capture", "stereo mix", "loopback",
     "what u hear", "steam streaming", "midi", "wave out mix", "output",
 )
+# MME truncates endpoint names to 31 chars (30 once trailing whitespace is stripped)
+_MME_NAME_LIMIT = 30
 # Spectrum band edges (Hz) used for the HUD visualizer
 _BAND_EDGES_HZ = [80, 150, 250, 400, 600, 900, 1300, 1900, 2800, 4000, 5600, 8000]
 
 DeviceSpec = Optional[Union[int, str]]
+
+# Live capture managers, so a device rescan can close and reopen their streams around the
+# PortAudio re-initialisation (Settings may run in the same process as the pipeline).
+_managers: "weakref.WeakSet[AudioCaptureManager]" = weakref.WeakSet()
 
 
 @dataclass
@@ -52,11 +59,42 @@ def _clean_name(name: str) -> str:
 
 
 def _same_device(a: str, b: str) -> bool:
-    """MME truncates names to 31 chars, so compare by prefix."""
+    """Exact match, or prefix match when the shorter name looks MME-truncated."""
     a, b = a.lower().strip(), b.lower().strip()
     if not a or not b:
         return False
-    return a == b or a.startswith(b) or b.startswith(a)
+    if a == b:
+        return True
+    short, long_ = (a, b) if len(a) < len(b) else (b, a)
+    return len(short) >= _MME_NAME_LIMIT and long_.startswith(short)
+
+
+def rescan_devices() -> bool:
+    """
+    Re-initialise PortAudio so newly plugged / enabled microphones become visible
+    (PortAudio snapshots the device list at init). Open capture streams are closed first
+    and reopened afterwards. Skipped while a dictation is recording; returns False then.
+    """
+    managers = list(_managers)
+    if any(m._recording for m in managers):
+        return False
+    for m in managers:
+        m._stream_lock.acquire()
+    try:
+        for m in managers:
+            m._close_stream()
+        try:
+            sd._terminate()
+            sd._initialize()
+        except Exception as e:
+            print(f"[Audio Notice] Device rescan: {e}")
+            return False
+        return True
+    finally:
+        for m in managers:
+            if not m._shut:
+                m._ensure_stream()
+            m._stream_lock.release()
 
 
 def list_input_devices() -> List[InputDevice]:
@@ -165,7 +203,9 @@ class AudioCaptureManager:
         self._cap_warned = False
         self.last_peak = 0.0
         self.last_rms = 0.0
+        self._shut = False
 
+        _managers.add(self)
         self._ensure_stream()
 
     # ------------------------------------------------------------------ devices
@@ -175,7 +215,7 @@ class AudioCaptureManager:
             return
         self.device_spec = spec
         self._dead_devices = []
-        self._close_stream()
+        self.refresh_devices()  # the chosen mic may have been plugged in after launch
         self._ensure_stream()
 
     def _candidates(self) -> List[InputDevice]:
@@ -268,13 +308,7 @@ class AudioCaptureManager:
 
     def refresh_devices(self):
         """Re-scan PortAudio's device list (picks up newly plugged/changed default devices)."""
-        with self._stream_lock:
-            self._close_stream()
-            try:
-                sd._terminate()
-                sd._initialize()
-            except Exception as e:
-                print(f"[Audio Notice] Device refresh: {e}")
+        rescan_devices()
 
     def handle_dead_signal(self) -> Optional[str]:
         """
@@ -390,5 +424,7 @@ class AudioCaptureManager:
         return audio
 
     def shutdown(self):
+        self._shut = True
         self._recording = False
         self._close_stream()
+        _managers.discard(self)
