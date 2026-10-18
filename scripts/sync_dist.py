@@ -47,9 +47,10 @@ for script, exe, refs in [
         print("STDOUT:", res.stdout)
         print("STDERR:", res.stderr)
 
-# 4. Recompile TaktSetup.exe
+# 4. Recompile TaktSetup.exe (version stamped from the latest git tag)
+subprocess.run(["python", r"scripts\write_build_info.py"], check=True)
 setup_exe = r"C:\Users\Raghav\OpenFlow\dist\TaktSetup.exe"
-cmd_setup = [csc, "/nologo", "/target:winexe", f"/out:{setup_exe}", "/reference:System.IO.Compression.FileSystem.dll", "/reference:System.IO.Compression.dll", r"scripts\TaktSetup.cs"]
+cmd_setup = [csc, "/nologo", "/target:winexe", f"/out:{setup_exe}", "/reference:System.IO.Compression.FileSystem.dll", "/reference:System.IO.Compression.dll", r"scripts\TaktSetup.cs", r"scripts\BuildInfo.g.cs"]
 res_setup = subprocess.run(cmd_setup, capture_output=True, text=True)
 print(f"Compiled TaktSetup.exe -> code {res_setup.returncode}")
 if res_setup.returncode != 0:

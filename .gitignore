@@ -4,6 +4,7 @@ dist/
 *.spec.bak
 *.exe
 *.zip
+scripts/BuildInfo.g.cs
 
 # Python cache & virtual environments
 __pycache__/

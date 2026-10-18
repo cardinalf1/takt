@@ -396,7 +396,7 @@ namespace TaktInstaller
                 using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\Takt"))
                 {
                     key.SetValue("DisplayName", "Takt Voice Dictation");
-                    key.SetValue("DisplayVersion", "1.0.0");
+                    key.SetValue("DisplayVersion", BuildInfo.Version);
                     key.SetValue("Publisher", "Desert Ant Labs & Raghav");
                     key.SetValue("InstallLocation", targetDir);
                     key.SetValue("DisplayIcon", taktExe);

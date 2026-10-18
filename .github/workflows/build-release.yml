@@ -57,13 +57,16 @@ jobs:
           $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
           $zipRefs = @("/reference:System.IO.Compression.FileSystem.dll", "/reference:System.IO.Compression.dll")
           $icon = "/win32icon:assets\takt.ico"
+          $version = if ($env:GITHUB_REF_TYPE -eq "tag") { $env:GITHUB_REF_NAME } else { "0.0.0-dev" }
+          python scripts/write_build_info.py --version $version
+          if ($LASTEXITCODE -ne 0) { throw "write_build_info.py failed" }
           & $csc /nologo /target:winexe $icon "/out:dist\Takt\TaktSettings.exe" scripts\TaktSettingsLauncher.cs
           if ($LASTEXITCODE -ne 0) { throw "TaktSettings.exe failed to compile" }
           & $csc /nologo /target:winexe $icon "/out:dist\Takt\TaktUpdate.exe" @zipRefs scripts\TaktUpdate.cs
           if ($LASTEXITCODE -ne 0) { throw "TaktUpdate.exe failed to compile" }
           & $csc /nologo /target:winexe $icon "/out:dist\Takt\Uninstall.exe" scripts\Uninstall.cs
           if ($LASTEXITCODE -ne 0) { throw "Uninstall.exe failed to compile" }
-          & $csc /nologo /target:winexe $icon "/out:dist\TaktSetup.exe" @zipRefs scripts\TaktSetup.cs
+          & $csc /nologo /target:winexe $icon "/out:dist\TaktSetup.exe" @zipRefs scripts\TaktSetup.cs scripts\BuildInfo.g.cs
           if ($LASTEXITCODE -ne 0) { throw "TaktSetup.exe failed to compile" }
 
       - name: Package Takt-Windows-x64.zip
